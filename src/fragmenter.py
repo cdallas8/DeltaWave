@@ -61,7 +61,6 @@ def find_cuttable_bonds(molecule):
  
             # Get index of the bond
             bondx = bond.GetIdx()
-            print("idx", bondx)
 
             # Check if both ends of the bond are not connected to hydrogen atoms
             if not (begin_atom.GetAtomicNum() == 1 or end_atom.GetAtomicNum() == 1):
@@ -209,6 +208,7 @@ Returns:
 def fragments_file(fragments, filename):
 
     with open(filename, 'w') as f:
+        f.write("'start'")
         for i, fragment in enumerate(fragments):
             # Convert the fragment to SMILES format
             fragment_smiles = Chem.MolToSmiles(fragment)
@@ -217,6 +217,7 @@ def fragments_file(fragments, filename):
             # Write the separator 'sep' after each fragment
             if i < len(fragments) :
                 f.write("'sep'")
+        f.write("'end_0'")
 
 #############################################################################
 
@@ -294,7 +295,7 @@ def generate_fsmiles(fragments, fsmiles_out):
     fsmiles_list = "'sep_0'".join(fsmiles_list)
 
     # Write FSMILES to file 
-        with open(fsmiles_out, 'w') as f:
+    with open(fsmiles_out, 'w') as f:
         f.write("'start_0'")
         f.write(fsmiles_list)     
         f.write("'sep_0''end_0'")
