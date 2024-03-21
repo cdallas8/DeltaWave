@@ -7,10 +7,41 @@ from rdkit.Chem import AllChem
 
 #############################################################################
 
+"""
+    Function to parse SDF file.
+
+    Args:
+        file_path: string - path to SDF file.
+
+    Returns:
+        list of RDKit Mol objects - list of molecules parsed from the SDF file.
+"""
+def parse_sdf(file_path):
+    # Initialize list 
+    molecules = []
+    # Parse file and append molecules to list 
+    with open(file_path, 'rb') as f:
+        m = Chem.ForwardSDMolSupplier(f)
+        for mol in m:
+            if mol is not None:
+                molecules.append(mol)
+    return molecules
+    
+
+"""
+    Function to find cuttable bonds in a molecule.
+
+    Args:
+        molecule: RDKit Mol object. 
+
+    Returns:
+        indices of cuttable bonds.
+"""
 def find_cuttable_bonds(molecule):
     # Get the ring information for the molecule
     ri = molecule.GetRingInfo()
     
+    # Get number of rings 
     num_rings = ri.NumRings()
     print("Number of rings in the molecule:", num_rings)
 
@@ -33,16 +64,26 @@ def find_cuttable_bonds(molecule):
             if not (begin_atom.GetAtomicNum() == 1 or end_atom.GetAtomicNum() == 1):
                 # Check if at least one end of the bond is attached to a ring
                 if (ri.NumAtomRings(begin_atom.GetIdx()) > 0 or ri.NumAtomRings(end_atom.GetIdx()) > 0):
-                    # Check if at least one end of the bond is not part of the ring 
-                    if (ri.NumAtomRings(begin_atom.GetIdx()) == 0 or ri.NumAtomRings(end_atom.GetIdx()) == 0) or (begin_atom.IsInRing() or end_atom.IsInRing()):
+                    # # Check if at least one end of the bond is not part of the ring 
+                    # if (ri.NumAtomRings(begin_atom.GetIdx()) == 0 or ri.NumAtomRings(end_atom.GetIdx()) == 0) or (begin_atom.IsInRing() or end_atom.IsInRing()):
                     
-                    # Append the bond index to the list of cuttable bonds
+                        # Append the bond index to the list of cuttable bonds
                         cuttable_bonds.append(bond.GetIdx())
 
     return cuttable_bonds
     
 #############################################################################
 
+"""
+    Function to fragment molecule given bonds indices.
+
+    Args:
+        molecule: RDKit Mol object. 
+        bond_indices: list of bond indices specifying which bonds to cut for fragmentation.
+
+    Returns:
+        list of RDKit Mol objects - the fragments resulting from cutting the specified bonds.
+"""
 def cut_bonds(molecule, bond_indices):
     # Fragment the molecule on the specified bonds
     fragments = Chem.FragmentOnBonds(molecule, bond_indices)
@@ -103,3 +144,78 @@ def filter_bonds(cuttable_bonds, ring_bond_indexes):
     return filtered_cuttable_bonds
 
 #############################################################################
+
+def fragments_file(fragments, filename):
+    with open(filename, 'w') as f:
+        for i, fragment in enumerate(fragments):
+            # Convert the fragment to SMILES format
+            fragment_smiles = Chem.MolToSmiles(fragment)
+            # Write the fragment SMILES to the file
+            f.write(fragment_smiles)
+            # Write the separator 'sep' after each fragment except for the last one
+            if i < len(fragments) :
+                f.write("'sep'")
+
+#############################################################################
+
+def get_ringsize_iter(fragments):
+    ring_sizes = []
+    for fragment in fragments:
+        # Get the ring information for the molecule
+        ri = fragment.GetRingInfo()
+        # Check if the fragment contains rings
+        if ri.NumRings() > 0:
+            # Extract ring sizes from the ring information
+            for ring in ri.AtomRings():
+                ring_size = len(ring)
+                ring_sizes.append(ring_size)
+        else:
+            # Append 0 if the fragment is not a ring
+            ring_sizes.append(0)
+    return ring_sizes
+
+#############################################################################
+
+def get_ringsize(fragment):
+    # Get the ring information for the molecule
+    ri = fragment.GetRingInfo()
+    # Check if the fragment contains rings
+    if ri.NumRings() > 0:
+        # Extract ring sizes from the ring information
+        for ring in ri.AtomRings():
+            ring_size = len(ring)
+    else: 
+        ring_size = 0
+    return ring_size
+    
+#############################################################################
+
+def generate_fsmiles(fragments):
+    fsmiles_list= []
+    for fragment in fragments:
+        s = get_ringsize(fragment)
+        f = Chem.MolToSmiles(fragment)
+  
+        updated_fragment = ''
+        inside_bracket = False
+        for char in f:
+            if char == '[':
+                inside_bracket = True
+                updated_fragment += char
+            elif char == ']':
+                inside_bracket = False
+                updated_fragment += char + '_0'
+            elif not inside_bracket and char.isalpha():
+                updated_fragment += char + '_' + str(s)
+            else:
+                updated_fragment += char
+
+        fsmiles_list.append(updated_fragment)
+    
+    # format 
+    fsmiles_list = "'sep_0'".join(fsmiles_list)     
+    
+    return fsmiles_list
+    
+#############################################################################
+    
