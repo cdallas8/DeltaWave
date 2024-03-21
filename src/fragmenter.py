@@ -92,11 +92,30 @@ def cut_bonds(molecule, bond_indices):
 
 #############################################################################
 
-def draw_mol(fragments):
-  Draw.MolsToGridImage(fragments).save("fragments.png")
+"""
+    Function to draw fragments of a molecule.
+
+    Args:
+        fragments: list of RDKit Mol objects - fragments of the molecule to be drawn.
+        out_path: str - path to save the .png file.
+    
+    Returns:
+        None
+"""
+def draw_mol(fragments, out_path):
+  Draw.MolsToGridImage(fragments).save(out_path)
   
 #############################################################################
 
+"""
+Function to get the bond indexes for each ring in a molecule.
+
+Args:
+    molecule: RDKit Mol object. 
+
+Returns:
+    list of lists - each inner list contains the bond indexes for a ring in the molecule.
+"""
 def get_ring_bond_indexes(molecule):
     # Get the ring information for the molecule
     ri = molecule.GetRingInfo()
@@ -121,6 +140,15 @@ def get_ring_bond_indexes(molecule):
     
 #############################################################################
 
+"""
+Function to merge bond indexes from all rings into a single list.
+
+Args:
+    all_ring_bond_indexes: list of lists. 
+
+Returns:
+    list - merged list containing all bond indexes from all rings.
+"""
 def merge_bonds(all_ring_bond_indexes):
     merged_idx = []
     for bond_indexes in all_ring_bond_indexes:
@@ -130,6 +158,16 @@ def merge_bonds(all_ring_bond_indexes):
     
 #############################################################################
 
+"""
+Function to filter cuttable bonds based on ring bond indices.
+
+Args:
+    cuttable_bonds: list - list of bond indices that are potentially cuttable.
+    ring_bond_indexes: list - list of bond indices belonging to rings.
+
+Returns:
+    list - filtered list of cuttable bond indices that are not part of any ring.
+"""
 def filter_bonds(cuttable_bonds, ring_bond_indexes):
     # Initialize a list to store the filtered cuttable bonds
     filtered_cuttable_bonds = []
@@ -145,6 +183,16 @@ def filter_bonds(cuttable_bonds, ring_bond_indexes):
 
 #############################################################################
 
+"""
+Function to write fragments to a file in SMILES format.
+
+Args:
+    fragments: list - list of RDKit Mol objects representing fragments.
+    filename: str - path to the output file.
+
+Returns:
+    None
+""""
 def fragments_file(fragments, filename):
     with open(filename, 'w') as f:
         for i, fragment in enumerate(fragments):
@@ -158,24 +206,15 @@ def fragments_file(fragments, filename):
 
 #############################################################################
 
-def get_ringsize_iter(fragments):
-    ring_sizes = []
-    for fragment in fragments:
-        # Get the ring information for the molecule
-        ri = fragment.GetRingInfo()
-        # Check if the fragment contains rings
-        if ri.NumRings() > 0:
-            # Extract ring sizes from the ring information
-            for ring in ri.AtomRings():
-                ring_size = len(ring)
-                ring_sizes.append(ring_size)
-        else:
-            # Append 0 if the fragment is not a ring
-            ring_sizes.append(0)
-    return ring_sizes
+"""
+Function to get the size of rings in a fragment.
 
-#############################################################################
+Args:
+    fragment: RDKit Mol object - fragment for which ring sizes are to be obtained.
 
+Returns:
+    int - size of the largest ring in the fragment, or 0 if the fragment contains no rings.
+"""
 def get_ringsize(fragment):
     # Get the ring information for the molecule
     ri = fragment.GetRingInfo()
@@ -190,6 +229,21 @@ def get_ringsize(fragment):
     
 #############################################################################
 
+"""
+Function to generate FSMILES for fragments.
+
+Args:
+    fragments: list - list of RDKit Mol objects representing fragments.
+
+Returns:
+    str - FSMILES for the fragments.
+
+This function generates modified SMILES strings for the input fragments. 
+Each atom in the fragment is annotated with its ring size if it is part of a ring,
+or '0' if it is not part of a ring. The annotations are added to the SMILES strings
+using the format 'atom_symbol_ring_size'.
+
+"""
 def generate_fsmiles(fragments):
     fsmiles_list= []
     for fragment in fragments:
@@ -218,4 +272,3 @@ def generate_fsmiles(fragments):
     return fsmiles_list
     
 #############################################################################
-    
