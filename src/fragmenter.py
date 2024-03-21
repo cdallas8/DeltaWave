@@ -192,7 +192,7 @@ Args:
 
 Returns:
     None
-""""
+"""
 def fragments_file(fragments, filename):
     with open(filename, 'w') as f:
         for i, fragment in enumerate(fragments):
@@ -238,7 +238,7 @@ Args:
 Returns:
     str - FSMILES for the fragments.
 """
-def generate_fsmiles(fragments):
+def generate_fsmiles(fragments, fsmiles_out):
     fsmiles_list= []
     for fragment in fragments:
         s = get_ringsize(fragment)
@@ -261,7 +261,12 @@ def generate_fsmiles(fragments):
         fsmiles_list.append(updated_fragment)
     
     # format 
-    fsmiles_list = "'sep_0'".join(fsmiles_list)     
+    fsmiles_list = "'sep_0'".join(fsmiles_list)
+    
+    with open(fsmiles_out, 'w') as f:
+        f.write("'start_0'")
+        f.write(fsmiles_list)     
+        f.write("'sep_0''end_0'")
     
     return fsmiles_list
     
