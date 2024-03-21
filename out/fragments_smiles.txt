@@ -1,0 +1,1 @@
+[2*]OC'sep'[1*]c1ccc([6*])cc1'sep'[5*]c1cccc([11*])c1'sep'[10*]S([14*])(=O)=O'sep'[11*]N1CCN([18*])CC1'sep'[17*]c1nccnc1[24*]'sep'[23*]c1ccc([28*])cc1'sep'[27*]OC'sep'
