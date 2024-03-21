@@ -1,17 +1,24 @@
 ##############################################################################
 
-# import functions
+# Import functions
 from fragmenter import *
 
 ##############################################################################
-# declare path
+# Declare path
 
-out_file = "out/fragments_smiles.txt"
+# Files
+mol_path = "data/test_mol.sdf"
+draw_path = "out/fragments.png"
+
+# Output files 
+smiles_out = "out/fragments_smiles.txt"
+fsmiles_out = "out/fsmiles.txt"
 
 ##############################################################################
 
 # Define the molecule
-molecule = Chem.MolFromSmiles('COc1ccc(-c2cccc(S(=O)(=O)N3CCN(c4nccnc4-c4ccc(OC)cc4)CC3)c2)cc1')
+molecule = parse_sdf(mol_path)[0]
+# molecule = Chem.MolFromSmiles('COc1ccc(-c2cccc(S(=O)(=O)N3CCN(c4nccnc4-c4ccc(OC)cc4)CC3)c2)cc1')
 
 # Find the cuttable bonds
 cuttable_bonds = find_cuttable_bonds(molecule)
@@ -36,15 +43,14 @@ print("Number of fragments:", len(fragments))
 for i, fragment in enumerate(fragments):
     print(f"Fragment {i+1} SMILES:", Chem.MolToSmiles(fragment))
 
-# fragments_file(fragments, out_file)
+# Write fragment SMILES to file 
+fragments_file(fragments, smiles_out)
 
-draw_mol(fragments)
+# Draw the fragments
+draw_mol(fragments, draw_path)
 
-##############################################################################
-
-ring_size = get_ringsize_iter(fragments)
-print(ring_size)
-
-fsmiles = generate_fsmiles(fragments)
+# Generate FSMILES
+fsmiles = generate_fsmiles(fragments, fsmiles_out)
 print(fsmiles)
 
+##############################################################################
