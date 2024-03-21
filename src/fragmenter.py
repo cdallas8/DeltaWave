@@ -237,12 +237,6 @@ Args:
 
 Returns:
     str - FSMILES for the fragments.
-
-This function generates modified SMILES strings for the input fragments. 
-Each atom in the fragment is annotated with its ring size if it is part of a ring,
-or '0' if it is not part of a ring. The annotations are added to the SMILES strings
-using the format 'atom_symbol_ring_size'.
-
 """
 def generate_fsmiles(fragments):
     fsmiles_list= []
